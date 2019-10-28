@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Application.Activities;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -29,9 +31,17 @@ namespace API
     {
       //tell option what data provider is 
       services.AddDbContext<DataContext>(opt =>
+             {
+               opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+             });
+      services.AddCors(opt =>
       {
-        opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+        opt.AddPolicy("CorsPolicy", policy =>
+              {
+                policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+              });
       });
+      services.AddMediatR(typeof(List.Handler).Assembly);
       services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
     }
     //dependency injection
@@ -48,7 +58,8 @@ namespace API
         //app.UseHsts();
       }
 
-      //app.UseHttpsRedirection();
+      //app.UseHttpsRedirection();//use middleweare
+      app.UseCors("CorsPolicy");
       app.UseMvc();
     }
   }
