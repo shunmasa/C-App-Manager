@@ -1,60 +1,36 @@
-import React from "react";
+import React, { SyntheticEvent, useContext } from "react";
 import { Grid } from "semantic-ui-react";
 import { IActivity } from "../../../app/models/activity";
 import ActivityList from "../../activities/dashboard/ActivityList";
 import ActivityDetails from "../details/ActivityDetails";
 import ActivityForm from "../../activities/form/ActivityForm";
-interface IProps {
-  activities: IActivity[];
-  selectActivity: (id: string) => void;
-  selectedActivity: IActivity | null;
-  editMode: boolean;
-  setEditMode: (editMode: boolean) => void;
-  setSelectedActivity: (activity: IActivity | null) => void;
-  createActivity: (activity: IActivity) => void;
-  editActivity: (activity: IActivity) => void;
-  deleteActivity: (id: string) => void;
-}
+import ActivityStore from "../../../app/stores/activityStore";
+import { observer } from "mobx-react-lite";
 
+// interface IProps {
+//   deleteActivity: (e: SyntheticEvent<HTMLButtonElement>, id: string) => void;
+//   submitting: boolean;
+//   target: string;
+// }
 //path null setSelected paticular case
 //setActivity return void //define function id:string return void
 //Grid.Column width 10 //Grid.column 6
 //path props ..props.activities => destructure ({activities})
-const ActivityDashboard: React.FC<IProps> = ({
-  activities,
-  selectActivity,
-  selectedActivity,
-  editMode,
-  setEditMode,
-  setSelectedActivity,
-  createActivity,
-  editActivity,
-  deleteActivity
-}) => {
+//previously this props below coming through the parant but
+const ActivityDashboard: React.FC = () => {
+  const activityStore = useContext(ActivityStore); //use ActivityStore by useContext
+  const { editMode, selectedActivity } = activityStore;
   return (
     <Grid>
       <Grid.Column width={10}>
-        <ActivityList
-          activities={activities}
-          selectActivity={selectActivity}
-          deleteActivity={deleteActivity}
-        />
+        <ActivityList />
       </Grid.Column>
       <Grid.Column width={6}>
-        {selectedActivity && !editMode && (
-          <ActivityDetails
-            activity={selectedActivity}
-            setEditMode={setEditMode}
-            setSelectedActivity={setSelectedActivity}
-          />
-        )}
+        {selectedActivity && !editMode && <ActivityDetails />}
         {editMode && (
           <ActivityForm
             key={(selectedActivity && selectedActivity.id) || 0}
-            setEditMode={setEditMode}
             activity={selectedActivity!}
-            createActivity={createActivity}
-            editActivity={editActivity}
           />
         )}
       </Grid.Column>
@@ -63,7 +39,7 @@ const ActivityDashboard: React.FC<IProps> = ({
 };
 
 //if selectedActivity has , show selectedActivity.id or 0
-export default ActivityDashboard;
+export default observer(ActivityDashboard);
 
 //activiry | null ...selectedActivity !...selectedActivity is func path as null
 //if not editmode and selectedActivity has not null , activityDetail will be seen
