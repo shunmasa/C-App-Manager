@@ -1,8 +1,36 @@
-import React, { useContext } from "react";
-import { Item, Label, Button, Segment } from "semantic-ui-react";
+import React, { useContext, Fragment } from "react";
+import { Item, Label } from "semantic-ui-react";
 
 import { observer } from "mobx-react-lite";
 import ActivityStore from "../../../app/stores/activityStore";
+
+import ActivityListItem from "./ActivityListItem";
+
+//group of activities //group acrivity by date and activities
+const ActivityList: React.FC = () => {
+  const activityStore = useContext(ActivityStore);
+  const { activitiesByDate } = activityStore;
+  return (
+    <Fragment>
+      {activitiesByDate.map(([group, activities]) => (
+        <Fragment key={group}>
+          <Label size="large" color="blue">
+            {group}
+          </Label>
+
+          <Item.Group divided>
+            {activities.map(activity => (
+              <ActivityListItem key={activity.id} activity={activity} />
+            ))}
+          </Item.Group>
+        </Fragment>
+      ))}
+    </Fragment>
+  );
+};
+//loadding target ,activity.id ...name or submitting
+export default observer(ActivityList);
+
 // interface IProps {
 //   deleteActivity: (
 //     event: SyntheticEvent<HTMLButtonElement>,
@@ -12,52 +40,3 @@ import ActivityStore from "../../../app/stores/activityStore";
 //   target: string;
 // }
 //type pf component React.FC(function)<IProps>
-const ActivityList: React.FC = () => {
-  const activityStore = useContext(ActivityStore);
-  const {
-    activitiesByDate,
-    selectActivity,
-    deleteActivity,
-    submitting,
-    target
-  } = activityStore;
-  return (
-    <Segment clearing>
-      <Item.Group divided>
-        {activitiesByDate.map(activity => (
-          <Item key={activity.id}>
-            <Item.Content>
-              <Item.Header as="a">{activity.title}</Item.Header>
-              <Item.Meta>{activity.date}</Item.Meta>
-              <Item.Description>
-                <div>{activity.description}</div>
-                <div>
-                  {activity.city},{activity.venue}
-                </div>
-              </Item.Description>
-              <Item.Extra>
-                <Button
-                  onClick={() => selectActivity(activity.id)}
-                  floated="right"
-                  content="View"
-                  color="blue"
-                />
-                <Button
-                  name={activity.id}
-                  loading={target === activity.id && submitting}
-                  onClick={e => deleteActivity(e, activity.id)}
-                  floated="right"
-                  content="Delete"
-                  color="red"
-                />
-                <Label basic content={activity.category} />
-              </Item.Extra>
-            </Item.Content>
-          </Item>
-        ))}
-      </Item.Group>
-    </Segment>
-  );
-};
-//loadding target ,activity.id ...name or submitting
-export default observer(ActivityList);

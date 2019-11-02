@@ -9,24 +9,44 @@ import agent from '../api/agent'
 
 configure({ enforceActions: 'always' });
 // loading action inside await realistically better to wrap in runInAction 
-//only async wait after wait runInAction(()=>{})
+//only async wait after wait runInAction(()=>{})//ctivity:initially set null = null
 class ActivityStore {
   @observable activityRegistry = new Map();//map function replate push,find so on in the array
-  @observable activities: IActivity[] = [];
+
   @observable loadingInitial = false;
-  @observable selectedActivity: IActivity | undefined;//selectedAcitivity was undefined so type also chnges to undefin from null
-  @observable editMode = false;
+  @observable activity: IActivity | null = null;//selectedAcitivity was undefined so type also chnges to undefin from null
+
   @observable submitting = false;
   @observable target = '';
   //computed all have data in side store , already existing data for sorting
 
+  //unique date is key, array of activity is value/js object
   @computed get activitiesByDate() {
-    return Array.from(this.activityRegistry.values()).sort(
-      (a, b) => Date.parse(a.date) - Date.parse(b.date)
-    );
-  }//assending date order //date currently string so parse Date to convert date type 
+    return this.groupActivitiesByDate(Array.from(this.activityRegistry.values()))
+
+  }
+
+
+
+  //assending date order //date currently string so parse Date to convert date type 
   //convert activityRegistry in to the array, when use values which eill be iterable in the array
   //map(key,value).set()or get() or array.from ...value()
+  //enumable properties of //entries()
+
+  groupActivitiesByDate(activities: IActivity[]) {
+    const sortedActivities = activities.sort(
+      (a, b) => Date.parse(a.date) - Date.parse(b.date)
+    )
+    return Object.entries(sortedActivities.reduce((activities, activity) => {
+      //splite time 
+      const date = activity.date.split('T')[0];
+      activities[date] = activities[date] ? [...activities[date], activity] : [activity];
+      return activities;
+    }, {} as { [key: string]: IActivity[] }));
+  }
+  //array {}objects as key:string 
+  //reduce accumurate key , value
+  //in arrray , string 'unique id': value
 
 
   //asyncroness code// promise error handling//list:Promise<IActivity>
@@ -56,14 +76,17 @@ class ActivityStore {
     }
   };
 
-
+  @action clearActivity = () => {
+    this.activity = null;
+  }
+  //like state activity = null 
   @action createActivity = async (activity: IActivity) => {
     this.submitting = true;
     try {
       await agent.Activities.create(activity);
       runInAction('createing activity', () => {
         this.activityRegistry.set(activity.id, activity);
-        this.editMode = false;
+
         this.submitting = false;
       })
     } catch (error) {
@@ -84,8 +107,8 @@ class ActivityStore {
       //set activity
       runInAction('editing activity', () => {
         this.activityRegistry.set(activity.id, activity)
-        this.selectedActivity = activity;
-        this.editMode = false;
+        this.activity = activity;
+
         this.submitting = false
       })
 
@@ -95,6 +118,8 @@ class ActivityStore {
       })
     }
   }
+
+
 
   @action deleteActivity = async (event: SyntheticEvent<HTMLButtonElement>, id: string) => {
     this.submitting = true;
@@ -116,27 +141,35 @@ class ActivityStore {
     }
 
   }
+  //to navigate to the view page when clieckd view button
+  @action loadActivity = async (id: string) => {
+    let activity = this.getActivity(id);
+    //if has the activity.id
+    if (activity) {
+      this.activity = activity;
+    } else {
+      this.loadingInitial = true;
+      try {
+        activity = await agent.Activities.details(id);//display data which has id
+        runInAction('getting activity', () => {
+          this.activity = activity;
+          this.loadingInitial = false;
+        })
+      } catch (error) {
+        runInAction('get activity error', () => {
+          this.loadingInitial = false;
+          console.log(error)
+        })
+      }
+    }
+  }
 
-  @action openCreateForm = () => {
-    this.editMode = true;
-    this.selectedActivity = undefined;
-  }
-  @action openEditForm = (id: string) => {
-    this.selectedActivity = this.activityRegistry.get(id)
-    this.editMode = true;
-  }
-  @action canselSelectedActivity = () => {
-    this.selectedActivity = undefined;
-    this.editMode = true;
-  }
+  getActivity = (id: string) => {
+    return this.activityRegistry.get(id);
+  }//map through id 
+  //get() return the value at the given key or undefined
 
-  @action cancelFormOpen = () => {
-    this.editMode = false;
-  }
-  @action selectActivity = (id: string) => {
-    this.selectedActivity = this.activityRegistry.get(id);
-    this.editMode = false;
-  };
+
 }
 //used to be this.activities.find(a => a.id === id)--get(id)
 //everything in the class//instanciation in the createContext()
