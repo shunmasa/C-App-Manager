@@ -24,6 +24,7 @@ namespace API.Controllers
     [HttpGet]
     public async Task<ActionResult<List<Activity>>> List()
     {
+
       return await _mediator.Send(new List.Query());
     }
     [HttpGet("{id}")]//root activity
@@ -33,7 +34,7 @@ namespace API.Controllers
       return await _mediator.Send(new Details.Query { Id = id });
     }
     [HttpPost]//form body to give a hint where to look for property to send it up
-    public async Task<ActionResult<Unit>> Create(Create.Command command)
+    public async Task<ActionResult<Unit>> Create([FromBody]Create.Command command)
     {
       return await _mediator.Send(command);
     }

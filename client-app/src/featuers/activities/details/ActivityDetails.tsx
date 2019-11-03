@@ -27,15 +27,19 @@ const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({
 }) => {
   const activityStore = useContext(ActivityStore);
   const { activity, loadActivity, loadingInitial } = activityStore;
+
   //selectedActivity(): type activity path activity (as null or undefined )in the selectedActivity() use activity
 
   useEffect(() => {
-    loadActivity(match.params.id); //to access id need to type id:string
-  }, [loadActivity, match.params.id]); //need dependecy due to external func fetching
+    loadActivity(match.params.id);
+    //to access id need to type id:string
+  }, [loadActivity, match.params.id, history]);
+  //need dependecy due to external func fetching
 
   if (loadingInitial || !activity)
     return <LoadingComponent content="loading activity..." />;
   //activity is setted as undefined so if undefined
+  if (!activity) return <h2>Activity not Found</h2>;
   return (
     <Grid>
       <Grid.Column width={10}>

@@ -62,16 +62,16 @@ class ActivityStore {
           //activity:Promise<IActivity[]>
           activity.date = activity.date.split(".")[0];
           this.activityRegistry.set(activity.id, activity);
+          this.loadingInitial = false;
         })
         //response.data...from backend then convert to string
       });//.set(key,value)//it is used to be activities.push//activityRegistry.set = map function  
-      this.loadingInitial = false;
-
     } catch (error) {
       runInAction('load activities error', () => {// nameing is not mandately 
         this.loadingInitial = false;
         console.log(error);
       })
+      console.log(error);
 
     }
   };

@@ -23,5 +23,4 @@ const HomePage = () => {
     </Segment>
   );
 };
-
 export default HomePage;

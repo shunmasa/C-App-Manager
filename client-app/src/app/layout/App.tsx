@@ -2,14 +2,19 @@ import React, { Fragment } from "react";
 import { Container } from "semantic-ui-react";
 import ActivityDashboard from "../../featuers/activities/dashboard/ActivityDashboard";
 import { observer } from "mobx-react-lite"; //observer is HOC
-
+import { ToastContainer } from "react-toastify";
 import NavBar from "../../featuers/nav/NavBar";
-import LoadingComponent from "./LoadingComponent";
 
-import { Route, withRouter, RouteComponentProps } from "react-router-dom";
+import {
+  Route,
+  withRouter,
+  RouteComponentProps,
+  Switch
+} from "react-router-dom";
 import ActivityForm from "../../featuers/activities/form/ActivityForm";
 import HomePage from "../../featuers/home/HomePage";
 import ActivityDetails from "../../featuers/activities/details/ActivityDetails";
+import NotFound from "./NotFound";
 //IActivity [] array set difinition//uniontype Iactivity | null (null) type null
 //location from RouteComponentProps
 
@@ -24,19 +29,24 @@ const App: React.FC<RouteComponentProps> = ({ location }) => {
   //useEffect , DidMount(one time run),DidUpdate(check to see any property is recieved if they have component update )
   //WillUnmount(clean up anything need to )
   //if wrap sigle elemnt div or fragment//path down loadingIntial and activities from ActivityStore
-
+  //switch  A <Switch> looks through its children <Route>s and
+  // the first one that matches the current URL. */}
   return (
     <Fragment>
+      <ToastContainer position="bottom-right" />
       <NavBar />
       <Container style={{ marginTop: "7em" }}>
-        <Route exact path="/" component={HomePage} />
-        <Route exact path="/activities" component={ActivityDashboard} />
-        <Route path="/activities/:id" component={ActivityDetails} />
-        <Route
-          key={location.key}
-          path={["/createActivity", "/manage/:id"]}
-          component={ActivityForm}
-        />
+        <Switch>
+          <Route exact path="/" component={HomePage} />
+          <Route exact path="/activities" component={ActivityDashboard} />
+          <Route path="/activities/:id" component={ActivityDetails} />
+          <Route
+            key={location.key}
+            path={["/createActivity", "/manage/:id"]}
+            component={ActivityForm}
+          />
+          <Route component={NotFound} />
+        </Switch>
       </Container>
     </Fragment>
   );
